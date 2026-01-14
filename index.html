@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Malla Curricular Interactiva</title>
+
+<style>
+:root{
+  --red-approved:#e53935;
+  --pink-available:#ffd6d6;
+  --gray-locked:#9a9a9a;
+  --accent:#2b6cb0;
+  --card-bg:#fff;
+  --shadow:0 4px 12px rgba(0,0,0,0.06);
+  --badge-bg:#ffd54f;
+}
+
+body{
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+  margin:16px;
+  background:#f7fafc;
+  color:#111;
+}
+
+header{
+  display:flex;
+  gap:16px;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+}
+
+h1{margin:0;font-size:18px}
+p.sub{margin:0;color:#555;font-size:13px}
+
+.controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+
+.counter{
+  background:var(--card-bg);
+  padding:10px 14px;
+  border-radius:10px;
+  box-shadow:var(--shadow);
+  display:flex;
+  gap:10px;
+  min-width:220px;
+}
+.counter strong{font-size:18px;color:var(--accent)}
+
+.grid-wrap{
+  margin-top:18px;
+  display:flex;
+  gap:12px;
+  align-items:flex-start;
+  overflow:auto;
+  padding-bottom:40px;
+}
+
+.semester{
+  min-width:220px;
+  background:var(--card-bg);
+  border-radius:10px;
+  padding:10px;
+  box-shadow:var(--shadow);
+}
+
+.sem-title{
+  font-weight:700;
+  font-size:14px;
+  margin-bottom:8px;
+  text-align:center;
+}
+
+.course{
+  padding:8px 10px;
+  margin-bottom:8px;
+  border-radius:8px;
+  cursor:pointer;
+  user-select:none;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.course.approved{background:var(--red-approved);color:white}
+.course.available{background:var(--pink-available);color:#7a1c1c}
+.course.locked{background:var(--gray-locked);color:white}
+
+.course .meta{
+  display:flex;
+  justify-content:space-between;
+  font-size:12px;
+  align-items:center;
+}
+
+.badge{
+  font-size:11px;
+  padding:3px 6px;
+  border-radius:999px;
+  background:var(--badge-bg);
+  color:#111;
+}
+
+.btn{
+  background:#fff;
+  border:1px solid #ddd;
+  padding:6px 8px;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+.legend{
+  margin-top:12px;
+  display:flex;
+  gap:12px;
+  align-items:center;
+}
+
+.legend .sw{
+  width:18px;
+  height:14px;
+  border-radius:4px;
+  display:inline-block;
+}
+
+@media (max-width:800px){
+  .semester{min-width:180px}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div>
+    <h1>Malla Curricular Interactiva — Ingeniería Civil</h1>
+    <p class="sub">Haz clic en un curso para marcarlo como aprobado.</p>
+  </div>
+
+  <div class="controls">
+    <div class="counter">
+      <div>
+        <div style="font-size:12px;color:#666">Créditos Aprobados</div>
+        <strong id="creditCount">0</strong>
+      </div>
+      <div style="border-left:1px solid #eee;height:36px;margin-left:8px;padding-left:8px">
+        <div style="font-size:12px">Créditos Totales</div>
+        <div id="totalCredits" style="font-weight:700">0</div>
+      </div>
+    </div>
+    <button class="btn" id="resetBtn">Reset Aprobados</button>
+  </div>
+</header>
+
+<section class="grid-wrap" id="grid"></section>
+
+<section class="legend">
+  <div><span class="sw" style="background:var(--red-approved)"></span> Aprobado</div>
+  <div><span class="sw" style="background:var(--pink-available)"></span> Disponible</div>
+  <div><span class="sw" style="background:var(--gray-locked)"></span> Bloqueado</div>
+  <div><span class="badge">✔️</span> Obligatorio</div>
+</section>
+
+<script>
+/* ================= MEMORIA ================= */
+const STORAGE_KEY = 'malla_civil_estado';
+
+function saveState(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...approved]));
+}
+
+function loadState(){
+  const data = localStorage.getItem(STORAGE_KEY);
+  if(data) approved = new Set(JSON.parse(data));
+}
+/* ========================================== */
+
+/* ======= DATOS ======= */
+const cursos = [
+  {"codigo":"3005","nombre":"Técnicas de Estudio e Investigación","creditos":3,"prereq":[],"semestre":1},
+  {"codigo":"3003","nombre":"Área Social Humanística 1","creditos":3,"prereq":[],"semestre":1},
+  {"codigo":"3000","nombre":"Área Matemática Básica 1","creditos":9,"prereq":[],"semestre":1},
+  {"codigo":"3001","nombre":"Química General 1","creditos":7,"prereq":[],"semestre":1},
+  {"codigo":"3004","nombre":"Área Técnica Complementaria 1","creditos":4,"prereq":[],"semestre":1},
+  {"codigo":"3082","nombre":"Deportes 1","creditos":2,"prereq":[],"semestre":1}
+];
+
+/* ===== OBLIGATORIOS ===== */
+const obligatoriosFijos = new Set([
+  "3005","3003","3000","3001","3004"
+]);
+
+/* ================= LÓGICA ================= */
+const cursoMap = {};
+cursos.forEach(c=>cursoMap[c.codigo]=c);
+
+let approved = new Set();
+
+const totalCredits = cursos.reduce((s,c)=>s+(c.creditos||0),0);
+document.getElementById('totalCredits').textContent = totalCredits;
+
+function isAvailable(c){
+  return !c.prereq || c.prereq.every(p=>approved.has(p));
+}
+
+function render(){
+  const grid=document.getElementById('grid');
+  grid.innerHTML='';
+
+  [...new Set(cursos.map(c=>c.semestre))].sort((a,b)=>a-b).forEach(sem=>{
+    const box=document.createElement('div');
+    box.className='semester';
+    box.innerHTML=`<div class="sem-title">Semestre ${sem}</div>`;
+
+    cursos.filter(c=>c.semestre===sem).forEach(c=>{
+      const div=document.createElement('div');
+      div.className='course '+(approved.has(c.codigo)?'approved':isAvailable(c)?'available':'locked');
+
+      div.innerHTML=`
+        <div><strong>${c.codigo}</strong> — ${c.nombre}</div>
+        <div class="meta">
+          <div>${c.creditos} cr</div>
+          <div style="display:flex;gap:6px;align-items:center">
+            ${obligatoriosFijos.has(c.codigo)?'<span class="badge">✔️</span>':''}
+            ${c.prereq.length?'Prer: '+c.prereq.join(','):''}
+          </div>
+        </div>
+      `;
+
+      div.onclick=()=>{
+        if(approved.has(c.codigo)) approved.delete(c.codigo);
+        else if(isAvailable(c)) approved.add(c.codigo);
+        saveState();
+        render();
+      };
+
+      box.appendChild(div);
+    });
+    grid.appendChild(box);
+  });
+
+  document.getElementById('creditCount').textContent =
+    [...approved].reduce((s,c)=>s+(cursoMap[c]?.creditos||0),0);
+}
+
+document.getElementById('resetBtn').onclick=()=>{
+  approved.clear();
+  saveState();
+  render();
+};
+
+loadState();
+render();
+</script>
+
+</body>
+</html>
