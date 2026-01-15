@@ -10,8 +10,7 @@
   --approved:#e53935;
   --available:#ffd6d6;
   --locked:#9a9a9a;
-  --accent:#2b6cb0;
-  --obligatorio:#fbc02d;
+  --obligatorio:#ffd54f;
 }
 
 body{
@@ -35,11 +34,11 @@ h1{font-size:18px;margin:0}
   padding:10px 14px;
   border-radius:10px;
   box-shadow:0 4px 10px rgba(0,0,0,.08);
+  font-size:14px;
 }
 
 .counter strong{
   font-size:18px;
-  color:var(--accent);
 }
 
 .grid{
@@ -68,12 +67,11 @@ h1{font-size:18px;margin:0}
   border-radius:8px;
   margin-bottom:8px;
   font-size:13px;
-  cursor:pointer;
 }
 
-.aprobado{background:var(--approved);color:white}
-.disponible{background:var(--available);color:#7a1c1c}
-.bloqueado{background:var(--locked);color:white;cursor:not-allowed}
+.course.aprobado{background:var(--approved);color:white;cursor:pointer}
+.course.disponible{background:var(--available);cursor:pointer}
+.course.bloqueado{background:var(--locked);color:white;cursor:not-allowed}
 
 .meta{
   font-size:11px;
@@ -98,56 +96,60 @@ h1{font-size:18px;margin:0}
 <header>
   <h1>Malla Curricular Interactiva – Ingeniería Civil</h1>
   <div class="counter">
-    Créditos aprobados:
-    <strong><span id="creditos">0</span></strong>
-    /
-    <strong><span id="total">0</span></strong>
+    Créditos: <strong><span id="aprobados">0</span> / <span id="totales">0</span></strong>
   </div>
 </header>
 
 <div class="grid" id="grid"></div>
 
 <script>
-/* ================= CURSOS ================= */
+/* ========= CONFIG ========= */
+const STORAGE_KEY = "malla_civil_aprobados";
+
+/* ========= OBLIGATORIOS ========= */
+const obligatorios = new Set([
+"3005","3003","3000","3001","3004","3011","3006","3007",
+"3161","3162","3013","3014","3163","3164"
+]);
+
+/* ========= CURSOS ========= */
 const cursos = [
-  {"codigo":"3005","nombre":"Técnicas de Estudio e Investigación","creditos":3,"prereq":[],"semestre":1},
-  {"codigo":"3003","nombre":"Área Social Humanística 1","creditos":3,"prereq":[],"semestre":1},
-  {"codigo":"3000","nombre":"Área Matemática Básica 1","creditos":9,"prereq":[],"semestre":1},
-  {"codigo":"3001","nombre":"Química General 1","creditos":7,"prereq":[],"semestre":1},
-  {"codigo":"3004","nombre":"Área Técnica Complementaria 1","creditos":4,"prereq":[],"semestre":1},
-  {"codigo":"3082","nombre":"Deportes 1","creditos":2,"prereq":[],"semestre":1},
+{"codigo":"3005","nombre":"Técnicas de Estudio e Investigación","creditos":3,"prereq":[],"semestre":1},
+{"codigo":"3003","nombre":"Área Social Humanística 1","creditos":3,"prereq":[],"semestre":1},
+{"codigo":"3000","nombre":"Área Matemática Básica 1","creditos":9,"prereq":[],"semestre":1},
+{"codigo":"3001","nombre":"Química General 1","creditos":7,"prereq":[],"semestre":1},
+{"codigo":"3004","nombre":"Área Técnica Complementaria 1","creditos":4,"prereq":[],"semestre":1},
 
-  {"codigo":"3011","nombre":"Área Social Humanística 2","creditos":3,"prereq":["3003"],"semestre":2},
-  {"codigo":"3006","nombre":"Matemática Básica 2","creditos":9,"prereq":["3000"],"semestre":2},
-  {"codigo":"3007","nombre":"Física Básica","creditos":5,"prereq":["3000"],"semestre":2},
-  {"codigo":"3161","nombre":"Química para Ingeniería Civil","creditos":6,"prereq":["3001","3000"],"semestre":2},
-  {"codigo":"3162","nombre":"Dibujo Costructivo para Ingeniería","creditos":6,"prereq":["3004"],"semestre":2},
+{"codigo":"3011","nombre":"Área Social Humanística 2","creditos":3,"prereq":["3003"],"semestre":2},
+{"codigo":"3006","nombre":"Matemática Básica 2","creditos":9,"prereq":["3000"],"semestre":2},
+{"codigo":"3007","nombre":"Física Básica","creditos":5,"prereq":["3000"],"semestre":2},
+{"codigo":"3161","nombre":"Química para Ingeniería Civil","creditos":6,"prereq":["3001","3000"],"semestre":2},
+{"codigo":"3162","nombre":"Dibujo Constructivo","creditos":6,"prereq":["3004"],"semestre":2},
 
-  {"codigo":"3013","nombre":"Área Matemática Intermedia 1","creditos":9,"prereq":["3006"],"semestre":3},
-  {"codigo":"3014","nombre":"Física 1","creditos":5,"prereq":["3006","3007"],"semestre":3},
-  {"codigo":"3163","nombre":"Ecología","creditos":4,"prereq":["3161"],"semestre":3},
-  {"codigo":"3164","nombre":"Prácticas Iniciales","creditos":0,"prereq":["3006","3162","3007"],"semestre":3}
+{"codigo":"3013","nombre":"Matemática Intermedia 1","creditos":9,"prereq":["3006"],"semestre":3},
+{"codigo":"3014","nombre":"Física 1","creditos":5,"prereq":["3006","3007"],"semestre":3},
+{"codigo":"3163","nombre":"Ecología","creditos":4,"prereq":["3161"],"semestre":3},
+{"codigo":"3164","nombre":"Prácticas Iniciales","creditos":0,"prereq":["3006","3162","3007"],"semestre":3}
 ];
 
-/* ===== TOTAL DE CRÉDITOS ===== */
-const totalPensum = cursos.reduce((s,c)=>s + c.creditos, 0);
-document.getElementById("total").textContent = totalPensum;
-
-/* ============ MEMORIA ============ */
-const STORAGE_KEY = "malla_civil_aprobados";
+/* ========= ESTADO ========= */
 let aprobados = new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"));
 
-/* ============ FUNCIONES ============ */
-function puedeLlevar(curso){
-  return curso.prereq.every(p => aprobados.has(p));
+const totalCreditos = cursos.reduce((s,c)=>s+c.creditos,0);
+document.getElementById("totales").textContent = totalCreditos;
+
+/* ========= FUNCIONES ========= */
+function puedeLlevar(c){
+  return c.prereq.every(p => aprobados.has(p));
 }
 
 function render(){
   const grid = document.getElementById("grid");
   grid.innerHTML = "";
 
+  let suma = 0;
+
   const semestres = [...new Set(cursos.map(c=>c.semestre))].sort((a,b)=>a-b);
-  let creditosAprobados = 0;
 
   semestres.forEach(sem=>{
     const col = document.createElement("div");
@@ -165,7 +167,7 @@ function render(){
         <strong>${c.codigo}</strong> ${c.nombre}
         <div class="meta">
           <span>${c.creditos} cr</span>
-          <span class="badge">⭐ Obligatorio</span>
+          ${obligatorios.has(c.codigo)?'<span class="badge">⭐ Obligatorio</span>':''}
         </div>
         <div class="meta">
           <span>${c.prereq.length ? "Req: "+c.prereq.join(", ") : ""}</span>
@@ -174,22 +176,20 @@ function render(){
 
       if (estado !== "bloqueado") {
         div.onclick = () => {
-          aprobados.has(c.codigo)
-            ? aprobados.delete(c.codigo)
-            : aprobados.add(c.codigo);
+          aprobados.has(c.codigo) ? aprobados.delete(c.codigo) : aprobados.add(c.codigo);
           localStorage.setItem(STORAGE_KEY, JSON.stringify([...aprobados]));
           render();
         };
       }
 
-      if (aprobados.has(c.codigo)) creditosAprobados += c.creditos;
+      if (aprobados.has(c.codigo)) suma += c.creditos;
       col.appendChild(div);
     });
 
     grid.appendChild(col);
   });
 
-  document.getElementById("creditos").textContent = creditosAprobados;
+  document.getElementById("aprobados").textContent = suma;
 }
 
 render();
