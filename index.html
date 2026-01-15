@@ -128,23 +128,18 @@ h1{font-size:18px;margin:0}
     </div>
   </div>
 
-  <!-- LEYENDA SUPERIOR -->
   <div class="legend">
     <div class="legend-item">
-      <span class="color-box" style="background:var(--approved)"></span>
-      <span>Aprobado</span>
+      <span class="color-box" style="background:var(--approved)"></span> Aprobado
     </div>
     <div class="legend-item">
-      <span class="color-box" style="background:var(--available)"></span>
-      <span>Disponible</span>
+      <span class="color-box" style="background:var(--available)"></span> Disponible
     </div>
     <div class="legend-item">
-      <span class="color-box" style="background:var(--locked)"></span>
-      <span>Bloqueado</span>
+      <span class="color-box" style="background:var(--locked)"></span> Bloqueado
     </div>
     <div class="legend-item">
-      <span class="badge">⭐</span>
-      <span>Curso obligatorio</span>
+      <span class="badge">⭐</span> Obligatorio
     </div>
   </div>
 </header>
@@ -154,30 +149,29 @@ h1{font-size:18px;margin:0}
 <script>
 const STORAGE_KEY = "malla_civil_aprobados";
 
+/* ===== OBLIGATORIOS (CIVIL) ===== */
 const obligatorios = new Set([
-  "3000","3001","3003","3004","3005",
-  "3006","3007","3011","3084","3083","3085",
-  "3013","3014","3020","3021","3022","3023","3090","3025",
-  "3027","3091","3034","3029","3033","3092",
-  "3093","3042","3031","3032",
-  "3095","3096","3050","3040","3041","3097",
-  "3057","3059","3049","3100","3101","3102",
-  "3103","3104","3105","3106","3107","3108",
-  "3112","3113","3114","3115"
-
+  "3005","3003","3000","3001","3004","3011","3006","3007",
+  "3013","3014","3166","3021","3022","3025","3090","3167",
+  "3170","3031","3171","3172","3028","3040","3181","3182",
+  "3183","3186","3187","3188","3189","3194","3195","3197",
+  "3198","3200","3202","3203","3204","3206","3208","3209",
+  "3211","3214","3215","3216","3218","3219","3221","3223"
 ]);
 
+/* ===== CURSOS ===== */
 const cursos = [
-{"codigo":"3005","nombre":"Técnicas de Estudio e Investigación","creditos":3,"prereq":[],"semestre":1}, 
- {"codigo":"3003","nombre":"Área Social Humanística 1","creditos":3,"prereq":[],"semestre":1},
- {"codigo":"3000","nombre":"Área Matemática Básica 1","creditos":9,"prereq":[],"semestre":1}, 
- {"codigo":"3001","nombre":"Química General 1","creditos":7,"prereq":[],"semestre":1}, 
- {"codigo":"3004","nombre":"Área Técnica Complementaria 1","creditos":4,"prereq":[],"semestre":1},
- {"codigo":"3082","nombre":"Deportes 1","creditos":2,"prereq":[],"semestre":1}, 
- {"codigo":"3011","nombre":"Área Social Humanística 2","creditos":3,"prereq":["3003"],"semestre":2}, 
- {"codigo":"3006","nombre":"Matemática Básica 2","creditos":9,"prereq":["3000"],"semestre":2}, 
- {"codigo":"3007","nombre":"Física Básica","creditos":5,"prereq":["3000"],"semestre":2},
- {"codigo":"3161","nombre":"Química para Ingeniería Civil","creditos":6,"prereq":["3001","3000"],"semestre":2}, 
+  {"codigo":"3005","nombre":"Técnicas de Estudio e Investigación","creditos":3,"prereq":[],"semestre":1},
+  {"codigo":"3003","nombre":"Área Social Humanística 1","creditos":3,"prereq":[],"semestre":1},
+  {"codigo":"3000","nombre":"Área Matemática Básica 1","creditos":9,"prereq":[],"semestre":1},
+  {"codigo":"3001","nombre":"Química General 1","creditos":7,"prereq":[],"semestre":1},
+  {"codigo":"3004","nombre":"Área Técnica Complementaria 1","creditos":4,"prereq":[],"semestre":1},
+  {"codigo":"3082","nombre":"Deportes 1","creditos":2,"prereq":[],"semestre":1},
+
+  {"codigo":"3011","nombre":"Área Social Humanística 2","creditos":3,"prereq":["3003"],"semestre":2},
+  {"codigo":"3006","nombre":"Matemática Básica 2","creditos":9,"prereq":["3000"],"semestre":2},
+  {"codigo":"3007","nombre":"Física Básica","creditos":5,"prereq":["3000"],"semestre":2},
+  {"codigo":"3161","nombre":"Química para Ingeniería Civil","creditos":6,"prereq":["3001","3000"],"semestre":2}, 
  {"codigo":"3162","nombre":"Dibujo Costructivo para Ingeniería","creditos":6,"prereq":["3004"],"semestre":2}, 
  {"codigo":"3013","nombre":"Área Matemática Intermedia 1","creditos":9,"prereq":["3006"],"semestre":3},
  {"codigo":"3014","nombre":"Física 1","creditos":5,"prereq":["3006","3007"],"semestre":3},
@@ -248,15 +242,24 @@ const cursos = [
  {"codigo":"3216","nombre":"Métodos de construcción y supervisión de obras","creditos":4,"prereq":["3208"],"semestre":10}, 
  {"codigo":"3217","nombre":"Urbanismo","creditos":4,"prereq":["3211"],"semestre":10}, 
  {"codigo":"3218","nombre":"Planeamiento","creditos":4,"prereq":["3211"],"semestre":10}, 
- {"codigo":"3219","nombre":"Costos, presupuestos y avalúos","creditos":5,"prereq":["3208","3209","3206"],"semestre":10},
+ {"codigo":"3219","nombre":"Costos, presupuestos y avalúos":5,"prereq":["3208","3209","3206"],"semestre":10}, 
  {"codigo":"3220","nombre":"Gestión de proyectos","creditos":4,"prereq":["3211"],"semestre":10}, 
  {"codigo":"3221","nombre":"Prácticas finales de Ingeniería Civil","creditos":0,"prereq":["3208","3209","3194"],"semestre":10},
  {"codigo":"3222","nombre":"Seminario de Investigación EPS, Civil","creditos":3,"prereq":["3212","3204"],"semestre":10}, 
  {"codigo":"3223","nombre":"Seminario de Investigación Civil","creditos":3,"prereq":["3212","3204"],"semestre":10}
 ];
 
-let aprobados = new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"));
+/* ===== MEMORIA SEGURA ===== */
+let aprobados = new Set();
+try{
+  const guardados = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+  const codigosValidos = new Set(cursos.map(c=>c.codigo));
+  guardados.forEach(c => codigosValidos.has(c) && aprobados.add(c));
+}catch{
+  localStorage.removeItem(STORAGE_KEY);
+}
 
+/* ===== CREDITOS TOTALES ===== */
 const totalCreditos = cursos.reduce((s,c)=>s+c.creditos,0);
 document.getElementById("totales").textContent = totalCreditos;
 
