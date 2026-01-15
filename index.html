@@ -6,17 +6,43 @@
 <title>Malla Ingeniería Civil</title>
 
 <style>
+:root{
+  --approved:#e53935;     /* ROJO aprobado */
+  --available:#ffd6d6;   /* Rosado disponible */
+  --locked:#9a9a9a;      /* Gris bloqueado */
+  --badge:#ffd54f;       /* Obligatorio */
+}
+
 body{
-  font-family: Arial, sans-serif;
+  font-family:Arial, sans-serif;
   background:#f4f6f8;
   margin:20px;
 }
-h1{text-align:center}
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:10px;
+}
+
+h1{margin:0}
+
+.counter{
+  background:white;
+  padding:10px 14px;
+  border-radius:10px;
+  box-shadow:0 4px 10px rgba(0,0,0,.1);
+  font-size:14px;
+}
 
 .grid{
   display:flex;
   gap:12px;
   overflow-x:auto;
+  padding-bottom:20px;
+  margin-top:15px;
 }
 
 .semestre{
@@ -39,29 +65,57 @@ h1{text-align:center}
   cursor:pointer;
 }
 
-.aprobado{background:#c7f0d6}
-.normal{background:#ffd6d6}
+.aprobado{
+  background:var(--approved);
+  color:white;
+}
+
+.disponible{
+  background:var(--available);
+}
+
+.bloqueado{
+  background:var(--locked);
+  color:white;
+  cursor:not-allowed;
+}
 
 .badge{
-  background:#ffd54f;
+  background:var(--badge);
   border-radius:12px;
   padding:2px 6px;
   font-size:11px;
 }
 
-small{font-size:12px}
+button{
+  padding:6px 10px;
+  border-radius:8px;
+  border:1px solid #ccc;
+  cursor:pointer;
+}
 </style>
 </head>
 
 <body>
 
-<h1>Malla Curricular – Ingeniería Civil</h1>
+<div class="top">
+  <h1>Malla Curricular – Ingeniería Civil</h1>
+
+  <div class="counter">
+    <strong>Créditos aprobados:</strong>
+    <span id="aprobados">0</span> /
+    <span id="totales">0</span>
+  </div>
+
+  <button onclick="resetear()">Reset</button>
+</div>
 
 <div class="grid" id="grid"></div>
 
 <script>
-const STORAGE_KEY = "civil_malla_ok";
+const STORAGE_KEY = "malla_civil_estado_final";
 
+/* ===== OBLIGATORIOS ===== */
 const obligatorios = new Set([
 "3005","3003","3000","3001","3004","3011","3006","3007","3161","3162",
 "3013","3014","3163","3164","3166","3021","3022","3025","3090","3167",
@@ -71,6 +125,7 @@ const obligatorios = new Set([
 "3218","3219","3221","3223"
 ]);
 
+/* ===== CURSOS ===== */
 const cursos = [
 {"codigo":"3005","nombre":"Técnicas de Estudio e Investigación","creditos":3,"semestre":1},
 {"codigo":"3003","nombre":"Área Social Humanística 1","creditos":3,"semestre":1},
@@ -89,7 +144,6 @@ const cursos = [
 {"codigo":"3014","nombre":"Física 1","creditos":5,"semestre":3},
 {"codigo":"3163","nombre":"Ecología","creditos":4,"semestre":3},
 {"codigo":"3164","nombre":"Prácticas Iniciales","creditos":0,"semestre":3},
-{"codigo":"3019","nombre":"Ética Profesional","creditos":2,"semestre":3},
 
 {"codigo":"3166","nombre":"Topografía 1","creditos":7,"semestre":4},
 {"codigo":"3021","nombre":"Matemática Intermedia 2","creditos":6,"semestre":4},
@@ -126,9 +180,20 @@ const cursos = [
 
 let aprobados = new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"));
 
+const totalCreditos = cursos.reduce((s,c)=>s+c.creditos,0);
+document.getElementById("totales").textContent = totalCreditos;
+
 function render(){
-  const grid = document.getElementById("grid");
+  const grid=document.getElementById("grid");
   grid.innerHTML="";
+
+  let suma = 0;
+
+  cursos.forEach(c=>{
+    if(aprobados.has(c.codigo)) suma += c.creditos;
+  });
+
+  document.getElementById("aprobados").textContent = suma;
 
   [...new Set(cursos.map(c=>c.semestre))].forEach(s=>{
     const col=document.createElement("div");
@@ -136,23 +201,32 @@ function render(){
     col.innerHTML=`<h3>Semestre ${s}</h3>`;
 
     cursos.filter(c=>c.semestre===s).forEach(c=>{
+      let estado = aprobados.has(c.codigo) ? "aprobado" : "disponible";
+
       const d=document.createElement("div");
-      d.className="curso "+(aprobados.has(c.codigo)?"aprobado":"normal");
+      d.className="curso "+estado;
       d.innerHTML=`
         <strong>${c.codigo}</strong> ${c.nombre}<br>
-        <small>${c.creditos} créditos ${obligatorios.has(c.codigo)?'<span class="badge">✔</span>':''}</small>
+        <small>${c.creditos} cr ${obligatorios.has(c.codigo)?'<span class="badge">✔</span>':''}</small>
       `;
+
       d.onclick=()=>{
-        if(aprobados.has(c.codigo)) aprobados.delete(c.codigo);
-        else aprobados.add(c.codigo);
+        aprobados.has(c.codigo)?aprobados.delete(c.codigo):aprobados.add(c.codigo);
         localStorage.setItem(STORAGE_KEY, JSON.stringify([...aprobados]));
         render();
       };
+
       col.appendChild(d);
     });
 
     grid.appendChild(col);
   });
+}
+
+function resetear(){
+  aprobados.clear();
+  localStorage.removeItem(STORAGE_KEY);
+  render();
 }
 
 render();
