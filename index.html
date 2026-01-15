@@ -8,29 +8,100 @@
 <style>
 :root{
   --approved:#c7f0d6;
-  --available:#ffe5e5;
+  --available:#e6e6e6;
   --locked:#9a9a9a;
   --accent:#2b6cb0;
   --badge:#ffd54f;
   --card:#fff;
   --shadow:0 4px 12px rgba(0,0,0,.08);
 }
-body{font-family:system-ui;margin:16px;background:#f7fafc}
-header{display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px}
+
+body{
+  font-family:system-ui,Segoe UI,Roboto,Arial;
+  margin:16px;
+  background:#f7fafc;
+}
+
+header{
+  display:flex;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:16px;
+}
+
 h1{margin:0;font-size:18px}
-.counter{background:var(--card);box-shadow:var(--shadow);padding:10px 14px;border-radius:10px;display:flex;gap:16px}
-.counter strong{color:var(--accent)}
-.grid{margin-top:20px;display:flex;gap:12px;overflow-x:auto;padding-bottom:40px}
-.sem{min-width:230px;background:var(--card);box-shadow:var(--shadow);border-radius:10px;padding:10px}
-.sem h3{text-align:center;font-size:14px;margin:0 0 8px}
-.course{border-radius:8px;padding:8px;margin-bottom:8px;cursor:pointer}
+
+.counter{
+  background:var(--card);
+  box-shadow:var(--shadow);
+  padding:10px 14px;
+  border-radius:10px;
+  display:flex;
+  gap:14px;
+}
+
+.counter strong{color:var(--accent);font-size:18px}
+
+.grid{
+  margin-top:20px;
+  display:flex;
+  gap:12px;
+  overflow-x:auto;
+  padding-bottom:40px;
+}
+
+.sem{
+  min-width:220px;
+  background:var(--card);
+  box-shadow:var(--shadow);
+  border-radius:10px;
+  padding:10px;
+}
+
+.sem h3{
+  text-align:center;
+  font-size:14px;
+  margin:0 0 8px;
+}
+
+.course{
+  border-radius:8px;
+  padding:8px;
+  margin-bottom:8px;
+  cursor:pointer;
+}
+
 .approved{background:var(--approved)}
 .available{background:var(--available)}
 .locked{background:var(--locked);color:#fff}
-.meta{font-size:12px;display:flex;justify-content:space-between;align-items:center}
-.badge{background:var(--badge);border-radius:999px;padding:2px 6px;font-size:11px}
-.legend{margin-top:12px;display:flex;gap:12px;flex-wrap:wrap}
-.legend span{width:18px;height:14px;display:inline-block;border-radius:4px}
+
+.meta{
+  font-size:12px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.badge{
+  background:var(--badge);
+  border-radius:999px;
+  padding:2px 6px;
+  font-size:11px;
+}
+
+.legend{
+  margin-top:12px;
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+.legend span{
+  width:18px;
+  height:14px;
+  display:inline-block;
+  border-radius:4px;
+}
 </style>
 </head>
 
@@ -39,11 +110,18 @@ h1{margin:0;font-size:18px}
 <header>
   <div>
     <h1>Malla Curricular Interactiva – Ingeniería Civil</h1>
-    <small>CUNOC – Universidad de San Carlos</small>
+    <small>Haz clic para marcar cursos aprobados</small>
   </div>
+
   <div class="counter">
-    <div><div style="font-size:12px">Aprobados</div><strong id="aprobados">0</strong></div>
-    <div><div style="font-size:12px">Total</div><strong id="total">0</strong></div>
+    <div>
+      <div style="font-size:12px">Créditos aprobados</div>
+      <strong id="aprobados">0</strong>
+    </div>
+    <div>
+      <div style="font-size:12px">Total</div>
+      <strong id="total">0</strong>
+    </div>
   </div>
 </header>
 
@@ -57,18 +135,77 @@ h1{margin:0;font-size:18px}
 </div>
 
 <script>
-const STORAGE_KEY="malla_civil";
+const STORAGE_KEY = "malla_civil";
 
-const obligatorios=new Set([
-"3005","3003","3000","3001","3004","3011","3006","3007","3161","3162",
-"3013","3014","3163","3164","3166","3021","3022","3025","3090","3167",
-"3170","3031","3171","3172","3028","3178","3040","3179","3180","3181",
-"3182","3183","3186","3187","3188","3189","3194","3195","3197","3198",
-"3200","3202","3203","3204","3206","3208","3209","3211","3214","3215",
-"3216","3218","3219","3221","3223"
-]);
+const obligatorios = new Set(["3005","3003","3000","3001","3004"]);
 
 const cursos = [
-  /* === 1° a 10° SEMESTRE – VERIFICADOS === */
-  /* (exactamente los cursos que me enviaste) */
-  /* --- por tamaño, GitHub sí lo soporta --- */
+  {"codigo":"3005","nombre":"Técnicas de Estudio e Investigación","creditos":3,"prereq":[],"semestre":1},
+  {"codigo":"3003","nombre":"Área Social Humanística 1","creditos":3,"prereq":[],"semestre":1},
+  {"codigo":"3000","nombre":"Área Matemática Básica 1","creditos":9,"prereq":[],"semestre":1},
+  {"codigo":"3001","nombre":"Química General 1","creditos":7,"prereq":[],"semestre":1},
+  {"codigo":"3004","nombre":"Área Técnica Complementaria 1","creditos":4,"prereq":[],"semestre":1},
+
+  {"codigo":"3011","nombre":"Área Social Humanística 2","creditos":3,"prereq":["3003"],"semestre":2},
+  {"codigo":"3006","nombre":"Matemática Básica 2","creditos":9,"prereq":["3000"],"semestre":2},
+  {"codigo":"3007","nombre":"Física Básica","creditos":5,"prereq":["3000"],"semestre":2}
+];
+
+let approved = new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"));
+
+const map = {};
+cursos.forEach(c=>map[c.codigo]=c);
+
+document.getElementById("total").textContent =
+  cursos.reduce((s,c)=>s+c.creditos,0);
+
+function available(c){
+  return c.prereq.every(p=>approved.has(p));
+}
+
+function render(){
+  const grid=document.getElementById("grid");
+  grid.innerHTML="";
+
+  [...new Set(cursos.map(c=>c.semestre))].forEach(s=>{
+    const col=document.createElement("div");
+    col.className="sem";
+    col.innerHTML=`<h3>Semestre ${s}</h3>`;
+
+    cursos.filter(c=>c.semestre===s).forEach(c=>{
+      const d=document.createElement("div");
+      d.className="course "+
+        (approved.has(c.codigo)?"approved":available(c)?"available":"locked");
+
+      d.innerHTML=`
+        <strong>${c.codigo}</strong> ${c.nombre}
+        <div class="meta">
+          <span>${c.creditos} cr</span>
+          <span>
+            ${obligatorios.has(c.codigo)?'<span class="badge">✔</span>':''}
+          </span>
+        </div>
+      `;
+
+      d.onclick=()=>{
+        if(approved.has(c.codigo)) approved.delete(c.codigo);
+        else if(available(c)) approved.add(c.codigo);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify([...approved]));
+        render();
+      };
+
+      col.appendChild(d);
+    });
+
+    grid.appendChild(col);
+  });
+
+  document.getElementById("aprobados").textContent =
+    [...approved].reduce((s,c)=>s+(map[c]?.creditos||0),0);
+}
+
+render();
+</script>
+
+</body>
+</html>
