@@ -19,7 +19,14 @@ body{
   background:#f7fafc;
 }
 
+/* ===== HEADER ===== */
 header{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.top{
   display:flex;
   justify-content:space-between;
   align-items:center;
@@ -31,18 +38,47 @@ h1{font-size:18px;margin:0}
 
 .counter{
   background:#fff;
-  padding:10px 14px;
+  padding:8px 12px;
   border-radius:10px;
   box-shadow:0 4px 10px rgba(0,0,0,.08);
-  font-size:14px;
+  font-size:13px;
 }
 
-.counter strong{
-  font-size:18px;
+.counter strong{font-size:16px}
+
+/* ===== LEYENDA ===== */
+.legend{
+  display:flex;
+  gap:14px;
+  align-items:center;
+  flex-wrap:wrap;
+  font-size:12px;
+  color:#444;
 }
 
+.legend-item{
+  display:flex;
+  align-items:center;
+  gap:5px;
+}
+
+.color-box{
+  width:12px;
+  height:12px;
+  border-radius:3px;
+}
+
+.badge{
+  background:var(--obligatorio);
+  font-size:10px;
+  padding:1px 5px;
+  border-radius:6px;
+  font-weight:600;
+}
+
+/* ===== GRID ===== */
 .grid{
-  margin-top:20px;
+  margin-top:18px;
   display:flex;
   gap:12px;
   overflow-x:auto;
@@ -69,9 +105,9 @@ h1{font-size:18px;margin:0}
   font-size:13px;
 }
 
-.course.aprobado{background:var(--approved);color:white;cursor:pointer}
-.course.disponible{background:var(--available);cursor:pointer}
-.course.bloqueado{background:var(--locked);color:white;cursor:not-allowed}
+.aprobado{background:var(--approved);color:white;cursor:pointer}
+.disponible{background:var(--available);cursor:pointer}
+.bloqueado{background:var(--locked);color:white;cursor:not-allowed}
 
 .meta{
   font-size:11px;
@@ -79,40 +115,50 @@ h1{font-size:18px;margin:0}
   justify-content:space-between;
   margin-top:4px;
 }
-
-.badge{
-  background:var(--obligatorio);
-  color:#000;
-  font-size:10px;
-  padding:2px 6px;
-  border-radius:6px;
-  font-weight:600;
-}
 </style>
 </head>
 
 <body>
 
 <header>
-  <h1>Malla Curricular Interactiva – Ingeniería Civil</h1>
-  <div class="counter">
-    Créditos: <strong><span id="aprobados">0</span> / <span id="totales">0</span></strong>
+  <div class="top">
+    <h1>Malla Curricular Interactiva – Ingeniería Civil</h1>
+    <div class="counter">
+      Créditos: <strong><span id="aprobados">0</span> / <span id="totales">0</span></strong>
+    </div>
+  </div>
+
+  <!-- LEYENDA SUPERIOR -->
+  <div class="legend">
+    <div class="legend-item">
+      <span class="color-box" style="background:var(--approved)"></span>
+      <span>Aprobado</span>
+    </div>
+    <div class="legend-item">
+      <span class="color-box" style="background:var(--available)"></span>
+      <span>Disponible</span>
+    </div>
+    <div class="legend-item">
+      <span class="color-box" style="background:var(--locked)"></span>
+      <span>Bloqueado</span>
+    </div>
+    <div class="legend-item">
+      <span class="badge">⭐</span>
+      <span>Curso obligatorio</span>
+    </div>
   </div>
 </header>
 
 <div class="grid" id="grid"></div>
 
 <script>
-/* ========= CONFIG ========= */
 const STORAGE_KEY = "malla_civil_aprobados";
 
-/* ========= OBLIGATORIOS ========= */
 const obligatorios = new Set([
 "3005","3003","3000","3001","3004","3011","3006","3007",
 "3161","3162","3013","3014","3163","3164"
 ]);
 
-/* ========= CURSOS ========= */
 const cursos = [
 {"codigo":"3005","nombre":"Técnicas de Estudio e Investigación","creditos":3,"prereq":[],"semestre":1},
 {"codigo":"3003","nombre":"Área Social Humanística 1","creditos":3,"prereq":[],"semestre":1},
@@ -132,13 +178,11 @@ const cursos = [
 {"codigo":"3164","nombre":"Prácticas Iniciales","creditos":0,"prereq":["3006","3162","3007"],"semestre":3}
 ];
 
-/* ========= ESTADO ========= */
 let aprobados = new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"));
 
 const totalCreditos = cursos.reduce((s,c)=>s+c.creditos,0);
 document.getElementById("totales").textContent = totalCreditos;
 
-/* ========= FUNCIONES ========= */
 function puedeLlevar(c){
   return c.prereq.every(p => aprobados.has(p));
 }
@@ -146,7 +190,6 @@ function puedeLlevar(c){
 function render(){
   const grid = document.getElementById("grid");
   grid.innerHTML = "";
-
   let suma = 0;
 
   const semestres = [...new Set(cursos.map(c=>c.semestre))].sort((a,b)=>a-b);
@@ -167,10 +210,7 @@ function render(){
         <strong>${c.codigo}</strong> ${c.nombre}
         <div class="meta">
           <span>${c.creditos} cr</span>
-          ${obligatorios.has(c.codigo)?'<span class="badge">⭐ Obligatorio</span>':''}
-        </div>
-        <div class="meta">
-          <span>${c.prereq.length ? "Req: "+c.prereq.join(", ") : ""}</span>
+          ${obligatorios.has(c.codigo)?'<span class="badge">⭐</span>':''}
         </div>
       `;
 
